@@ -7,7 +7,7 @@
  *   - Cloudflare: 'https://abc123.trycloudflare.com'
  *   - playit.gg:  'https://yourname.playit.gg:1234'
  */
-const API_BASE_URL = 'https://louisiana-aaa-wagner-emily.trycloudflare.com';
+const API_BASE_URL = 'https://demonstrated-opens-difficulties-arranged.trycloudflare.com';
 
 const api = {
   baseUrl: API_BASE_URL,
