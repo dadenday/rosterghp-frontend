@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — RosterGHP</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <span class="logo">📅 RosterGHP</span>
+      <span id="backend-status" class="status-error">checking...</span>
+    </div>
+    <div class="header-right">
+      <span id="nav-user" class="nav-user"></span>
+      <button id="theme-toggle" class="btn btn-sm" title="Toggle theme">☀️</button>
+      <button id="settings-toggle" class="btn btn-sm">⚙️ Settings</button>
+      <button id="logout-btn" class="btn btn-sm">Log Out</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Settings Panel -->
+    <div id="settings-panel" class="settings-panel hidden"></div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <span class="toolbar-label">Month</span>
+        <select id="month-select"></select>
+      </div>
+
+      <div class="toolbar-group">
+        <span class="toolbar-label">User</span>
+        <select id="user-select">
+          <option value="">-- Me --</option>
+        </select>
+      </div>
+
+      <div class="toolbar-group">
+        <span class="toolbar-label">Week</span>
+        <select id="week-select">
+          <option value="all">All Weeks</option>
+          <option value="1">Week 1</option>
+          <option value="2">Week 2</option>
+          <option value="3">Week 3</option>
+          <option value="4">Week 4</option>
+          <option value="5">Week 5</option>
+        </select>
+      </div>
+
+      <div class="toolbar-spacer"></div>
+
+      <div class="toolbar-group">
+        <button id="refresh-btn" class="btn btn-sm">🔄 Refresh</button>
+        <button id="export-ical" class="btn btn-sm">📅 iCal</button>
+        <button id="export-csv" class="btn btn-sm">📊 CSV</button>
+      </div>
+    </div>
+
+    <!-- Roster -->
+    <div class="roster-container">
+      <div id="roster-status" class="roster-status"></div>
+      <div id="roster-grid"></div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/roster.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

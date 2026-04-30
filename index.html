@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — RosterGHP</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-page">
+  <div class="login-card">
+    <h1>📅 RosterGHP</h1>
+    <p class="login-subtitle">Roster Viewer for GitHub Pages</p>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Enter your username" required autofocus>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+      <div id="login-error" class="error-msg"></div>
+    </form>
+
+    <div class="login-footer">
+      <p>Backend: <span id="backend-status" class="status-error">checking...</span></p>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Check backend status on load
+    api.get('/api/status')
+      .then((s) => {
+        const el = document.getElementById('backend-status');
+        el.textContent = `v${s.version} ✅`;
+        el.className = 'status-ok';
+      })
+      .catch(() => {
+        const el = document.getElementById('backend-status');
+        el.textContent = 'unreachable ❌';
+      });
+
+    auth.init();
+  </script>
+</body>
+</html>
