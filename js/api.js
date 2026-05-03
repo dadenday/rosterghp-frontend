@@ -12,7 +12,7 @@
  */
 
 // Cache version - increment to force all users to refresh cached URL
-const API_CACHE_VERSION = 'v1';
+const API_CACHE_VERSION = 'v2';
 
 // Initial hardcoded URL (updated by deploy script or manually)
 const HARDCODED_API_URL = 'https://minute-reproduction-gonna-penalties.trycloudflare.com';
