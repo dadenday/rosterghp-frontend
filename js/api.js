@@ -1,16 +1,87 @@
 /**
  * API Client for RosterGHP Frontend
  *
- * Configure API_BASE_URL to point at your backend tunnel.
- * Examples:
- *   - Local dev:  'http://127.0.0.1:8501'
- *   - Cloudflare: 'https://abc123.trycloudflare.com'
- *   - playit.gg:  'https://yourname.playit.gg:1234'
+ * Auto-discovers API endpoint via /api/config endpoint.
+ * Fallback order:
+ *   1. Hardcoded API_BASE_URL (for initial load)
+ *   2. Discovered URL from /api/config
+ *   3. localStorage cached URL
+ *
+ * Manual override: Set localStorage.setItem('apiBaseUrl', 'https://your-tunnel-url')
  */
-const API_BASE_URL = 'https://mbs7lkl3ezi7.shares.zrok.io';
+
+// Initial hardcoded URL (updated by deploy script or manually)
+const HARDCODED_API_URL = 'https://mbs7lkl3ezi7.shares.zrok.io';
+
+// Try to get cached URL from localStorage first
+const CACHED_API_URL = localStorage.getItem('apiBaseUrl');
+
+// Initial base URL (will be updated after config fetch)
+let API_BASE_URL = CACHED_API_URL || HARDCODED_API_URL;
 
 const api = {
   baseUrl: API_BASE_URL,
+
+  /**
+   * Initialize API client by fetching config from backend.
+   * Updates baseUrl if tunnel_url is provided in config.
+   * Call this once at app startup.
+   */
+  async init() {
+    try {
+      // Try to fetch config from current baseUrl
+      const configUrl = `${this.baseUrl}/api/config`;
+      const response = await fetch(configUrl, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Config fetch failed: ${response.status}`);
+      }
+
+      const config = await response.json();
+      
+      if (config.tunnel_url && config.tunnel_url !== this.baseUrl) {
+        console.log('[API] Discovered new tunnel URL:', config.tunnel_url);
+        this.baseUrl = config.tunnel_url;
+        localStorage.setItem('apiBaseUrl', config.tunnel_url);
+        return { updated: true, url: config.tunnel_url };
+      }
+
+      return { updated: false, url: this.baseUrl };
+    } catch (error) {
+      console.warn('[API] Config fetch failed, using cached/hardcoded URL:', error.message);
+      
+      // If we were using cached URL, try the hardcoded one as fallback
+      if (CACHED_API_URL && CACHED_API_URL !== HARDCODED_API_URL) {
+        console.log('[API] Trying hardcoded fallback URL:', HARDCODED_API_URL);
+        this.baseUrl = HARDCODED_API_URL;
+        return { updated: true, url: HARDCODED_API_URL, fallback: true };
+      }
+      
+      return { updated: false, url: this.baseUrl, error: error.message };
+    }
+  },
+
+  /**
+   * Manually set API base URL (for user override).
+   * @param {string} url - New API base URL
+   */
+  setBaseUrl(url) {
+    this.baseUrl = url;
+    localStorage.setItem('apiBaseUrl', url);
+    console.log('[API] Base URL set to:', url);
+  },
+
+  /**
+   * Clear cached API URL (reset to hardcoded default).
+   */
+  clearCache() {
+    localStorage.removeItem('apiBaseUrl');
+    this.baseUrl = HARDCODED_API_URL;
+    console.log('[API] Cache cleared, using hardcoded URL:', HARDCODED_API_URL);
+  },
 
   async request(path, options = {}) {
     const url = `${this.baseUrl}${path}`;

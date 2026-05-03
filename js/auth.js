@@ -2,7 +2,14 @@
  * Auth Manager - login, logout, session persistence
  */
 const auth = {
-  init() {
+  async init() {
+    // Initialize API client first (auto-discovers tunnel URL)
+    try {
+      await api.init();
+    } catch (err) {
+      console.warn('[Auth] API init failed, continuing with cached URL:', err);
+    }
+    
     this.bindLoginForm();
     this.updateNav();
   },

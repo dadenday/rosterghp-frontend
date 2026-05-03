@@ -31,22 +31,24 @@
     </div>
   </div>
 
-  <script src="js/api.js?v=4"></script>
-  <script src="js/auth.js?v=4"></script>
+  <script src="js/api.js?v=5"></script>
+  <script src="js/auth.js?v=5"></script>
   <script>
-    // Check backend status on load
-    api.get('/api/status')
-      .then((s) => {
+    // Initialize app (async to allow API discovery)
+    (async () => {
+      // Check backend status on load
+      try {
+        const s = await api.get('/api/status');
         const el = document.getElementById('backend-status');
         el.textContent = `v${s.version} ✅`;
         el.className = 'status-ok';
-      })
-      .catch(() => {
+      } catch {
         const el = document.getElementById('backend-status');
         el.textContent = 'unreachable ❌';
-      });
+      }
 
-    auth.init();
+      await auth.init();
+    })();
   </script>
 </body>
 </html>

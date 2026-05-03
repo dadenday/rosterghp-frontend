@@ -1,9 +1,19 @@
 /**
  * Main App Controller - initializes everything on dashboard
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // Guard: redirect to login if not authenticated
   if (!auth.guard()) return;
+
+  // Initialize API client (auto-discovers tunnel URL)
+  try {
+    const initResult = await api.init();
+    if (initResult.updated) {
+      console.log('[App] API URL updated:', initResult.url);
+    }
+  } catch (err) {
+    console.warn('[App] API init failed, continuing with cached URL:', err);
+  }
 
   // Init modules
   theme.init();
