@@ -8,13 +8,27 @@
  *   3. localStorage cached URL
  *
  * Manual override: Set localStorage.setItem('apiBaseUrl', 'https://your-tunnel-url')
+ * Clear cache: localStorage.removeItem('apiBaseUrl') or localStorage.removeItem('apiBaseUrlCache')
  */
+
+// Cache version - increment to force all users to refresh cached URL
+const API_CACHE_VERSION = 'v1';
 
 // Initial hardcoded URL (updated by deploy script or manually)
 const HARDCODED_API_URL = 'https://ocean-expressed-ascii-shopping.trycloudflare.com';
 
-// Try to get cached URL from localStorage first
-const CACHED_API_URL = localStorage.getItem('apiBaseUrl');
+// Try to get cached URL from localStorage first (with version check)
+const CACHED_API_URL = (() => {
+  const cached = localStorage.getItem('apiBaseUrl');
+  const cacheVersion = localStorage.getItem('apiBaseUrlCache');
+  if (cached && cacheVersion === API_CACHE_VERSION) {
+    return cached;
+  }
+  // Cache miss or version mismatch - clear old cache
+  localStorage.removeItem('apiBaseUrl');
+  localStorage.removeItem('apiBaseUrlCache');
+  return null;
+})();
 
 // Initial base URL (will be updated after config fetch)
 let API_BASE_URL = CACHED_API_URL || HARDCODED_API_URL;
@@ -46,6 +60,7 @@ const api = {
         console.log('[API] Discovered new tunnel URL:', config.tunnel_url);
         this.baseUrl = config.tunnel_url;
         localStorage.setItem('apiBaseUrl', config.tunnel_url);
+        localStorage.setItem('apiBaseUrlCache', API_CACHE_VERSION);
         return { updated: true, url: config.tunnel_url };
       }
 
@@ -57,6 +72,7 @@ const api = {
       if (CACHED_API_URL && CACHED_API_URL !== HARDCODED_API_URL) {
         console.log('[API] Trying hardcoded fallback URL:', HARDCODED_API_URL);
         this.baseUrl = HARDCODED_API_URL;
+        localStorage.setItem('apiBaseUrlCache', API_CACHE_VERSION);
         return { updated: true, url: HARDCODED_API_URL, fallback: true };
       }
       
@@ -79,6 +95,7 @@ const api = {
    */
   clearCache() {
     localStorage.removeItem('apiBaseUrl');
+    localStorage.removeItem('apiBaseUrlCache');
     this.baseUrl = HARDCODED_API_URL;
     console.log('[API] Cache cleared, using hardcoded URL:', HARDCODED_API_URL);
   },
