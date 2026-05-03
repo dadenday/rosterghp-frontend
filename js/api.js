@@ -15,7 +15,7 @@
 const API_CACHE_VERSION = 'v1';
 
 // Initial hardcoded URL (updated by deploy script or manually)
-const HARDCODED_API_URL = 'https://ocean-expressed-ascii-shopping.trycloudflare.com';
+const HARDCODED_API_URL = 'https://minute-reproduction-gonna-penalties.trycloudflare.com';
 
 // Try to get cached URL from localStorage first (with version check)
 const CACHED_API_URL = (() => {
