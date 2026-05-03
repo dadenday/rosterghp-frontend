@@ -11,7 +11,7 @@
  */
 
 // Initial hardcoded URL (updated by deploy script or manually)
-const HARDCODED_API_URL = 'https://mbs7lkl3ezi7.shares.zrok.io';
+const HARDCODED_API_URL = 'https://ocean-expressed-ascii-shopping.trycloudflare.com';
 
 // Try to get cached URL from localStorage first
 const CACHED_API_URL = localStorage.getItem('apiBaseUrl');
