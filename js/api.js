@@ -12,7 +12,7 @@
  */
 
 // Cache version - increment to force all users to refresh cached URL
-const API_CACHE_VERSION = 'v4';
+const API_CACHE_VERSION = 'v5';
 
 // Initial hardcoded URL (updated by deploy script or manually)
 const HARDCODED_API_URL = 'https://dealtime-sunset-ensemble-framework.trycloudflare.com';
@@ -106,7 +106,7 @@ const api = {
 
     const defaults = {
       headers: {
-        'Content-Type': 'application/json',
+        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       },
     };
