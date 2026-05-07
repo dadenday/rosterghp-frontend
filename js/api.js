@@ -12,10 +12,10 @@
  */
 
 // Cache version - increment to force all users to refresh cached URL
-const API_CACHE_VERSION = 'v3';
+const API_CACHE_VERSION = 'v4';
 
 // Initial hardcoded URL (updated by deploy script or manually)
-const HARDCODED_API_URL = 'https://themes-pork-cnet-analyses.trycloudflare.com';
+const HARDCODED_API_URL = 'https://dealtime-sunset-ensemble-framework.trycloudflare.com';
 
 // Try to get cached URL from localStorage first (with version check)
 const CACHED_API_URL = (() => {
