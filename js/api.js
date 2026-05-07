@@ -12,7 +12,7 @@
  */
 
 // Cache version - increment to force all users to refresh cached URL
-const API_CACHE_VERSION = 'v2';
+const API_CACHE_VERSION = 'v3';
 
 // Initial hardcoded URL (updated by deploy script or manually)
 const HARDCODED_API_URL = 'https://themes-pork-cnet-analyses.trycloudflare.com';
