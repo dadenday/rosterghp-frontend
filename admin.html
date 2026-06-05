@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Raw Records — RosterGHP</title>
+  <link rel="stylesheet" href="/frontend/css/style.css">
+  <style>
+    .admin-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin: 0 0 1rem;
+      padding: 0.25rem;
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 2px);
+      background: var(--bg-secondary);
+      box-shadow: var(--shadow);
+    }
+    .tab-btn {
+      padding: 0.6rem 0.95rem;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+    .tab-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+    .tab-btn.active {
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      border-color: var(--border);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+    .raw-table-container {
+      overflow-x: auto;
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      min-height: 300px;
+    }
+    .raw-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .raw-table th, .raw-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .raw-table th {
+      background: var(--bg-hover);
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+    .raw-table tr:last-child td {
+      border-bottom: none;
+    }
+    .metadata-cell {
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-secondary);
+      font-family: monospace;
+    }
+    .status-msg {
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .status-error { color: var(--danger); }
+    .ingest-panel {
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.02)), var(--bg-secondary);
+      border: 1px solid rgba(59, 130, 246, 0.18);
+      border-radius: calc(var(--radius) + 4px);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 0.9rem;
+    }
+    .ingest-panel h2 {
+      font-size: 1.05rem;
+      margin-bottom: 0.2rem;
+    }
+    .ingest-panel p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 0;
+      max-width: 70ch;
+    }
+    .ingest-form {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .ingest-form input[type="file"] {
+      width: 100%;
+      color: var(--text-secondary);
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.55rem;
+    }
+    .ingest-file-name {
+      grid-column: 1 / -1;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+    .ingest-result {
+      margin-top: 0.35rem;
+      padding: 0.95rem;
+      background: var(--bg-primary);
+      border: 1px solid rgba(59, 130, 246, 0.18);
+      border-radius: calc(var(--radius) + 2px);
+      color: var(--text-secondary);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    }
+    .ingest-summary {
+      display: grid;
+      gap: 0.85rem;
+    }
+    .ingest-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.75rem;
+    }
+    .ingest-stat {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 0.9rem;
+    }
+    .ingest-stat-label {
+      display: block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+    .ingest-stat-value {
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      word-break: break-word;
+    }
+    .ingest-details {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .ingest-details > summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 0.8rem 0.9rem;
+      color: var(--text-primary);
+      font-weight: 600;
+      border-bottom: 1px solid transparent;
+    }
+    .ingest-details[open] > summary {
+      border-bottom-color: var(--border);
+    }
+    .ingest-details > summary::-webkit-details-marker {
+      display: none;
+    }
+    .ingest-details-body {
+      padding: 0.9rem;
+      display: grid;
+      gap: 0.75rem;
+    }
+    .ingest-kv-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.65rem;
+    }
+    .ingest-kv {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.6rem 0.7rem;
+      background: var(--bg-secondary);
+    }
+    .ingest-kv-label {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.2rem;
+    }
+    .ingest-kv-value {
+      color: var(--text-primary);
+      font-size: 0.88rem;
+      word-break: break-word;
+    }
+    .ingest-subsection {
+      border-top: 1px solid var(--border);
+      padding-top: 0.75rem;
+      display: grid;
+      gap: 0.5rem;
+    }
+    .ingest-subsection:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+    .ingest-subsection h4 {
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .ingest-chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .ingest-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.55rem;
+      border-radius: 999px;
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-size: 0.76rem;
+    }
+    .ingest-decision-list {
+      display: grid;
+      gap: 0.6rem;
+    }
+    .ingest-decision {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-secondary);
+      padding: 0.75rem;
+      display: grid;
+      gap: 0.55rem;
+    }
+    .ingest-decision-title {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .ingest-raw {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-x: auto;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+   </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <span class="logo">📅 RosterGHP</span>
+      <span id="backend-status" class="status-error">checking...</span>
+    </div>
+    <div class="header-right">
+      <span id="nav-user" class="nav-user"></span>
+      <button id="theme-toggle" class="btn btn-sm" title="Toggle theme">☀️</button>
+      <button id="logout-btn" class="btn btn-sm">Log Out</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="admin-tabs">
+      <button class="tab-btn active" data-tab="SHIFT">Shifts</button>
+      <button class="tab-btn" data-tab="FLIGHT">Flights</button>
+    </div>
+
+    <section class="ingest-panel">
+      <h2>Ingest workbook</h2>
+      <p>Upload a daily roster workbook to run L1/L2 classification and extraction.</p>
+      <form id="ingest-form" class="ingest-form">
+        <input id="ingest-file" type="file" accept=".xlsx,.xlsm,.xls" />
+        <button id="ingest-submit" type="submit" class="btn btn-primary">⬆️ Upload</button>
+        <span id="ingest-file-name" class="ingest-file-name">Choose a workbook to upload.</span>
+      </form>
+      <div id="ingest-status" class="status-msg" style="padding: 0.75rem 0 0; text-align: left; color: var(--text-muted);">
+        Select a workbook to ingest.
+      </div>
+      <div id="ingest-result" class="ingest-result hidden"></div>
+    </section>
+
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <span class="toolbar-label">Month</span>
+        <select id="month-select">
+          <option value="">Loading...</option>
+        </select>
+      </div>
+
+      <div class="toolbar-group">
+        <span class="toolbar-label">Day</span>
+        <select id="day-select">
+          <option value="">-- Select Day --</option>
+        </select>
+      </div>
+
+      <div class="toolbar-spacer"></div>
+
+      <div class="toolbar-group">
+        <button id="refresh-btn" class="btn btn-sm">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <div class="raw-table-container">
+      <table id="raw-table" class="raw-table">
+        <thead>
+          <tr id="table-header">
+            <!-- Headers will be injected here -->
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <!-- Data will be injected here -->
+        </tbody>
+      </table>
+      <div id="roster-status" class="status-msg" style="color: var(--text-muted);">
+        Please select a month and day to view raw records.
+      </div>
+    </div>
+  </main>
+
+  <script src="/frontend/js/api.js?v=10"></script>
+  <script src="/frontend/js/auth.js?v=6"></script>
+  <script src="/frontend/js/theme.js?v=6"></script>
+  <script src="/frontend/js/admin.js?v=8"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const statusEl = document.getElementById('roster-status');
+
+      await auth.init();
+
+      if (!auth.isLoggedIn()) {
+        try {
+          const data = await api.get('/api/auth/session-token');
+          if (data && data.token) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+          }
+        } catch (err) {
+          console.warn('[Admin] Session bridge failed:', err.message);
+        }
+      }
+
+      if (auth.isLoggedIn()) {
+        const user = auth.getUser();
+        if (String(user.id) !== "0") {
+          window.location.href = '/';
+        } else {
+          admin.init();
+        }
+      } else {
+        window.location.href = '/login';
+      }
+
+      document.getElementById('logout-btn').addEventListener('click', () => auth.logout());
+      document.getElementById('theme-toggle').addEventListener('click', () => theme.toggle());
+    });
+  </script>
+</body>
+</html>

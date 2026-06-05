@@ -21,6 +21,11 @@ const roster = {
     try {
       const data = await api.months();
       select.innerHTML = '';
+      const allOpt = document.createElement('option');
+      allOpt.value = 'All';
+      allOpt.textContent = 'Tất cả tháng';
+      select.appendChild(allOpt);
+
       data.months.forEach((m) => {
         const opt = document.createElement('option');
         opt.value = m.value;
@@ -29,7 +34,7 @@ const roster = {
       });
 
       const savedMonth = localStorage.getItem('rosterghp-month');
-      if (savedMonth && data.months.find((m) => m.value === savedMonth)) {
+      if (savedMonth === 'All' || (savedMonth && data.months.find((m) => m.value === savedMonth))) {
         select.value = savedMonth;
       } else if (data.months.length > 0) {
         select.value = data.months[0].value;
@@ -96,7 +101,8 @@ const roster = {
     // Week filter
     if (this.weekFilter !== 'all') {
       entries = entries.filter((e) => {
-        const day = parseInt(e.date?.split('-')[2], 10);
+        const dateKey = e.date_iso || e.date || '';
+        const day = parseInt(dateKey.split('-')[2], 10);
         if (isNaN(day)) return false;
         const weekNum = Math.ceil(day / 7);
         return weekNum === parseInt(this.weekFilter);
@@ -113,7 +119,8 @@ const roster = {
     // Group by week for visual separation
     const weeks = {};
     entries.forEach((e) => {
-      const day = parseInt(e.date?.split('-')[2], 10) || 0;
+      const dateKey = e.date_iso || e.date || '';
+      const day = parseInt(dateKey.split('-')[2], 10) || 0;
       const week = Math.ceil(day / 7);
       if (!weeks[week]) weeks[week] = [];
       weeks[week].push(e);

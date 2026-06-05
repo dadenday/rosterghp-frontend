@@ -229,8 +229,12 @@ body {
   white-space: nowrap;
 }
 
-.toolbar select {
+.toolbar .toolbar-group select {
   padding: 0.4rem 0.6rem;
+  width: auto;
+  min-width: 180px;
+  max-width: 240px;
+  flex: 0 0 180px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg-secondary);
@@ -433,6 +437,10 @@ body {
   font-size: 0.8rem;
 }
 
+.hidden {
+  display: none !important;
+}
+
 /* Loading / Empty / Error states */
 .loading,
 .empty,
@@ -457,8 +465,10 @@ body {
     width: 100%;
   }
 
-  .toolbar-group select {
+  .toolbar .toolbar-group select {
     flex: 1;
+    width: 100%;
+    max-width: none;
   }
 
   .week-grid {

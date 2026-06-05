@@ -12,10 +12,13 @@
  */
 
 // Cache version - increment to force all users to refresh cached URL
-const API_CACHE_VERSION = 'v5';
+const API_CACHE_VERSION = 'v9';
 
 // Initial hardcoded URL (updated by deploy script or manually)
-const HARDCODED_API_URL = 'https://dealtime-sunset-ensemble-framework.trycloudflare.com';
+const HARDCODED_API_URL = 'https://s2lcrgtjg3ox.shares.zrok.io';
+const LOCAL_DEV_API_URL = 'http://127.0.0.1:8501';
+const IS_LOCAL_FRONTEND = ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
+const IS_ZROK_HOST = window.location.hostname.endsWith('.shares.zrok.io');
 
 // Try to get cached URL from localStorage first (with version check)
 const CACHED_API_URL = (() => {
@@ -31,7 +34,7 @@ const CACHED_API_URL = (() => {
 })();
 
 // Initial base URL (will be updated after config fetch)
-let API_BASE_URL = CACHED_API_URL || HARDCODED_API_URL;
+let API_BASE_URL = CACHED_API_URL || (IS_LOCAL_FRONTEND ? LOCAL_DEV_API_URL : (IS_ZROK_HOST ? window.location.origin : HARDCODED_API_URL));
 
 const api = {
   baseUrl: API_BASE_URL,
@@ -55,7 +58,7 @@ const api = {
       }
 
       const config = await response.json();
-      
+
       if (config.tunnel_url && config.tunnel_url !== this.baseUrl) {
         console.log('[API] Discovered new tunnel URL:', config.tunnel_url);
         this.baseUrl = config.tunnel_url;
@@ -67,15 +70,25 @@ const api = {
       return { updated: false, url: this.baseUrl };
     } catch (error) {
       console.warn('[API] Config fetch failed, using cached/hardcoded URL:', error.message);
-      
-      // If we were using cached URL, try the hardcoded one as fallback
-      if (CACHED_API_URL && CACHED_API_URL !== HARDCODED_API_URL) {
-        console.log('[API] Trying hardcoded fallback URL:', HARDCODED_API_URL);
-        this.baseUrl = HARDCODED_API_URL;
-        localStorage.setItem('apiBaseUrlCache', API_CACHE_VERSION);
-        return { updated: true, url: HARDCODED_API_URL, fallback: true };
+
+      const fallbackUrl = this.baseUrl === LOCAL_DEV_API_URL ? HARDCODED_API_URL : LOCAL_DEV_API_URL;
+      if (fallbackUrl && fallbackUrl !== this.baseUrl) {
+        try {
+          const response = await fetch(`${fallbackUrl}/api/config`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+          });
+          if (response.ok) {
+            this.baseUrl = fallbackUrl;
+            localStorage.setItem('apiBaseUrl', fallbackUrl);
+            localStorage.setItem('apiBaseUrlCache', API_CACHE_VERSION);
+            return { updated: true, url: fallbackUrl, fallback: true };
+          }
+        } catch {
+          // Keep the original failure path below.
+        }
       }
-      
+
       return { updated: false, url: this.baseUrl, error: error.message };
     }
   },
@@ -103,10 +116,13 @@ const api = {
   async request(path, options = {}) {
     const url = `${this.baseUrl}${path}`;
     const token = localStorage.getItem('token');
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+    const isUrlEncoded = typeof URLSearchParams !== 'undefined' && options.body instanceof URLSearchParams;
+    const isBlob = typeof Blob !== 'undefined' && options.body instanceof Blob;
 
     const defaults = {
       headers: {
-        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(options.body && !isFormData && !isUrlEncoded && !isBlob ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       },
     };
@@ -142,6 +158,12 @@ const api = {
     return this.request(path, { method: 'POST', body: JSON.stringify(body) });
   },
 
+  async ingest(file) {
+    const formData = new FormData();
+    formData.append('file', file, file.name || 'upload.xlsx');
+    return this.request('/api/ingest', { method: 'POST', body: formData });
+  },
+
   // Auth
   login(username, password) {
     return this.post('/api/auth/login', { username, password });
@@ -166,6 +188,15 @@ const api = {
   // Users
   users() {
     return this.get('/api/users');
+  },
+
+  // Inference confirmation
+  confirmInferenceLink(rawRecordId, userId, reason = 'confirmed from admin raw-records view') {
+    return this.post('/api/inference-links/confirm', {
+      raw_record_id: rawRecordId,
+      user_id: userId,
+      reason,
+    });
   },
 
   // Settings
