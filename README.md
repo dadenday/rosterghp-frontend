@@ -1,6 +1,8 @@
 # RosterGHP Frontend
 
-Static frontend for the RosterGHP hybrid architecture. Hosted on GitHub Pages, talks to your home backend via JWT-authenticated API calls.
+> **Secondary-client guide:** This README covers the static frontend path only. It is not the primary production frontend or repo-wide architecture authority. For core product canon and backend architecture, use `../MENTAL_MODEL.md`, `../CONTEXT.md`, `../ARCHITECTURE.md`, and the root `../README.md`.
+
+Static frontend for a **secondary / planned client path** in RosterGHP. It is not the current primary production frontend. Instead, it is a downstream client that talks to the home backend via JWT-authenticated API calls.
 
 ## Deploy to GitHub Pages
 
@@ -54,14 +56,14 @@ git push
 
 You need a public URL for your home backend. Options:
 
-### Option A: Cloudflare Tunnel (temporary, changes on restart)
+### Option A: Cloudflare Tunnel (legacy quick path)
 ```bash
 cd /path/to/RosterGHP
 ./tunnel.sh start-cf
 ```
 Copy the `*.trycloudflare.com` URL into `js/api.js`.
 
-### Option B: playit.gg (persistent, free account)
+### Option B: playit.gg (legacy helper path)
 ```bash
 cd /path/to/RosterGHP
 ./tunnel.sh setup-playit   # one-time
@@ -70,7 +72,7 @@ cd /path/to/RosterGHP
 Configure tunnel at https://playit.gg/account to point to `localhost:8501`.
 
 ### Option C: Cloudflare Named Tunnel (persistent, most reliable)
-Follow Cloudflare's docs to create a named tunnel with a permanent subdomain.
+Prefer the repo runbook in `../TUNNEL_SETUP.md` and `../docs/CLOUDFLARE_TUNNEL.md` instead of ad hoc setup notes here.
 
 ## Features
 
